@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './PostForm.css';
+
 
 // Use the API types instead of local ones
 import { Post } from '../../api/types';
@@ -78,7 +78,7 @@ const PostForm: React.FC<PostFormProps> = ({
   return (
     <div className="post-form-container">
       <h3 className="form-title">
-        {mode === 'create' ? '🧬 Add a Post:' : '🔧 Edit Post:'}
+        {mode === 'create' ? 'Add a Post:' : 'Edit Post:'}
       </h3>
       
       <form onSubmit={handleSubmit} className="post-form">
@@ -124,13 +124,13 @@ const PostForm: React.FC<PostFormProps> = ({
           {imagePreview && (
             <div className="image-preview-container">
               <img src={imagePreview} alt="Preview" className="image-preview" />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="remove-image-btn"
-              >
-                ✕ Remove
-              </button>
+                  <button
+                  type="button"
+                  onClick={removeImage}
+                  className="remove-image-btn"
+                >
+                  Remove
+                </button>
             </div>
           )}
           
@@ -155,7 +155,7 @@ const PostForm: React.FC<PostFormProps> = ({
             className="submit-btn"
             disabled={isLoading || !formData.title.trim() || !formData.content.trim()}
           >
-            {isLoading ? '🔄 Processing...' : submitButtonText}
+            {isLoading ? 'Processing...' : submitButtonText}
           </button>
         </div>
       </form>

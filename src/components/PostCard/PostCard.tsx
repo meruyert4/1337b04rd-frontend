@@ -1,6 +1,6 @@
 import React from 'react';
 import { Post } from '../../api/types';
-import './PostCard.css';
+
 
 interface PostCardProps {
   post: Post;
@@ -9,6 +9,7 @@ interface PostCardProps {
   onDelete?: (postId: number) => void;
   showActions?: boolean;
   compact?: boolean;
+  currentUserId?: string;
 }
 
 const PostCard: React.FC<PostCardProps> = ({
@@ -17,7 +18,8 @@ const PostCard: React.FC<PostCardProps> = ({
   onEdit,
   onDelete,
   showActions = true,
-  compact = false
+  compact = false,
+  currentUserId 
 }) => {
   const handleView = () => {
     if (onView) onView(post.id);
@@ -55,9 +57,27 @@ const PostCard: React.FC<PostCardProps> = ({
         </h3>
         <div className="post-meta">
           {post.author_name && (
-            <span className="post-author">👤 {post.author_name}</span>
+            <div className="post-author-section">
+              <div className="post-author-avatar">
+                {post.author_image ? (
+                  <img 
+                    src={post.author_image} 
+                    alt={post.author_name}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.style.display = 'none';
+                      target.nextElementSibling?.classList.remove('hidden');
+                    }}
+                  />
+                ) : null}
+                <div className={`post-author-placeholder ${post.author_image ? 'hidden' : ''}`}>
+                  {post.author_name.charAt(0).toUpperCase()}
+                </div>
+              </div>
+              <span className="post-author">{post.author_name}</span>
+            </div>
           )}
-          <span className="post-date">🕐 {formatDate(post.created_at)}</span>
+          <span className="post-date">{formatDate(post.created_at)}</span>
         </div>
       </div>
 
@@ -81,29 +101,29 @@ const PostCard: React.FC<PostCardProps> = ({
       {showActions && (
         <div className="post-actions">
           {onView && (
-            <button 
+            <button
+              onClick={() => onView(post.id)}
               className="action-btn view-btn"
-              onClick={handleView}
             >
-              👁️ View
+              View
             </button>
           )}
           
-          {onEdit && (
+          {onEdit && currentUserId && post.author_id === currentUserId && (
             <button 
               className="action-btn edit-btn"
               onClick={handleEdit}
             >
-              ✏️ Edit
+              Edit
             </button>
           )}
           
-          {onDelete && (
+          {onDelete && currentUserId && post.author_id === currentUserId && (
             <button 
               className="action-btn delete-btn"
               onClick={handleDelete}
             >
-              🗑️ Delete
+              Delete
             </button>
           )}
         </div>

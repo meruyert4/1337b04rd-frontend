@@ -23,7 +23,10 @@ class SessionManager {
         const session = await api.getSession(existingSessionId);
         if (session) {
           this.currentSession = session;
+          // Set session cookie for backend authentication
+          document.cookie = `session_id=${session.id}; path=/; max-age=86400; SameSite=Lax`;
           console.log('Session restored:', session.name);
+          console.log('Session cookie restored:', document.cookie);
           return;
         }
       } catch (error) {
@@ -40,6 +43,9 @@ class SessionManager {
     try {
       console.log('Creating new session...');
       
+      // Log current cookies
+      console.log('Current cookies:', document.cookie);
+      
       // Create session in backend (backend will assign random character)
       const session = await api.createSession();
 
@@ -49,7 +55,11 @@ class SessionManager {
       localStorage.setItem(this.sessionKey, session.id);
       this.currentSession = session;
       
+      // Set session cookie for backend authentication
+      document.cookie = `session_id=${session.id}; path=/; max-age=86400; SameSite=Lax`;
+      
       console.log('New session created:', session.name);
+      console.log('Session cookie set:', document.cookie);
     } catch (error) {
       console.error('Failed to create session:', error);
       // Don't create fallback session - let the user retry
@@ -140,6 +150,9 @@ class SessionManager {
   public clearSession() {
     localStorage.removeItem(this.sessionKey);
     this.currentSession = null;
+    // Clear session cookie
+    document.cookie = 'session_id=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT';
+    console.log('Session cleared, cookies cleared');
   }
 
   public isSessionValid(): boolean {

@@ -5,7 +5,7 @@ import PostForm, { PostFormData } from '../PostForm/PostForm';
 import { Post, CreatePostRequest, UpdatePostRequest } from '../../api/types';
 import { api } from '../../api';
 import { useSession } from '../../hooks/useSession';
-import './MyPosts.css';
+
 
 const MyPosts: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -13,7 +13,7 @@ const MyPosts: React.FC = () => {
 
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'create' | 'view'>('list');
-  const { userId, userName } = useSession();
+  const { userId, userName, session } = useSession();
 
   const loadMyPosts = React.useCallback(async () => {
     if (!userId) return;
@@ -40,7 +40,10 @@ const MyPosts: React.FC = () => {
       const createRequest: CreatePostRequest = {
         title: data.title,
         content: data.content,
-        image: data.image
+        image: data.image,
+        author_id: userId,
+        author_name: userName,
+        author_image: session?.image
       };
       
       const newPost = await api.createPost(createRequest);
@@ -90,7 +93,10 @@ const MyPosts: React.FC = () => {
           id: selectedPost.id,
           title: data.title,
           content: data.content,
-          image: data.image
+          image: data.image,
+          author_id: userId,
+          author_name: userName,
+          author_image: session?.image
         };
         
         const updatedPost = await api.updatePost(updateRequest);
@@ -109,7 +115,7 @@ const MyPosts: React.FC = () => {
         return (
           <div className="content-section">
             <div className="section-header">
-              <h2>🧬 {selectedPost ? 'Edit Post' : 'Create New Post'}</h2>
+              <h2>{selectedPost ? 'Edit Post' : 'Create New Post'}</h2>
               <button 
                 className="back-btn"
                 onClick={() => {
@@ -133,7 +139,7 @@ const MyPosts: React.FC = () => {
         return selectedPost ? (
           <div className="content-section">
             <div className="section-header">
-              <h2>👁️ View Post</h2>
+              <h2>View Post</h2>
               <button 
                 className="back-btn"
                 onClick={() => setViewMode('list')}
@@ -154,12 +160,12 @@ const MyPosts: React.FC = () => {
         return (
           <div className="content-section">
             <div className="section-header">
-              <h2>🌟 My Posts from the Multiverse</h2>
+              <h2>🌌 My Posts from the Multiverse</h2>
               <button 
                 className="create-btn"
                 onClick={() => setViewMode('create')}
               >
-                🧬 Create New Post
+                Create New Post
               </button>
             </div>
             {!userId ? (
@@ -174,6 +180,7 @@ const MyPosts: React.FC = () => {
                 onDeletePost={handleDeletePost}
                 loading={loading}
                 showActions={true}
+                currentUserId={userId}
               />
             )}
           </div>

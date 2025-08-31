@@ -1,7 +1,7 @@
 import React from 'react';
 import { Post } from '../../api/types';
 import PostCard from '../PostCard/PostCard';
-import './PostList.css';
+
 
 interface PostListProps {
   posts: Post[];
@@ -12,6 +12,7 @@ interface PostListProps {
   compact?: boolean;
   emptyMessage?: string;
   loading?: boolean;
+  currentUserId?: string;
 }
 
 const PostList: React.FC<PostListProps> = ({
@@ -21,8 +22,9 @@ const PostList: React.FC<PostListProps> = ({
   onDeletePost,
   showActions = true,
   compact = false,
-  emptyMessage = "No posts found in this dimension. Be the first to create chaos! 🧬",
-  loading = false
+  emptyMessage = "No posts found in this dimension. Be the first to create chaos!",
+  loading = false,
+  currentUserId
 }) => {
   // Safety check - if posts is null/undefined, show loading or empty state
   if (!posts) {
@@ -65,6 +67,7 @@ const PostList: React.FC<PostListProps> = ({
           onDelete={onDeletePost}
           showActions={showActions}
           compact={compact}
+          currentUserId={currentUserId}
         />
       ))}
     </div>

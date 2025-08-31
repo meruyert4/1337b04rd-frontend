@@ -1,3 +1,6 @@
+/* Import global styles first */
+@import './theme/globalStyles.css';
+
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600&display=swap');
 
 * {
@@ -10,48 +13,10 @@ html {
   scroll-behavior: smooth;
 }
 
-body {
-  font-family: 'Orbitron', sans-serif;
-  background: linear-gradient(145deg, #0f172a, #020617);
-  color: #e2e8f0;
-  overflow-x: hidden;
-  min-height: 100vh;
-  line-height: 1.5;
-}
-
 #root {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-}
-
-/* Global button styles */
-button {
-  font-family: 'Orbitron', sans-serif;
-  cursor: pointer;
-}
-
-/* Global link styles */
-a {
-  color: #94a3b8;
-  text-decoration: none;
-  transition: all 0.2s ease;
-}
-
-a:hover {
-  color: #4ade80;
-  text-shadow: 0 0 3px rgba(74, 222, 128, 0.2);
-}
-
-/* Global input styles */
-input, textarea {
-  font-family: 'Orbitron', sans-serif;
-}
-
-/* Focus styles */
-*:focus {
-  outline: 2px solid #4ade80;
-  outline-offset: 2px;
 }
 
 /* Loading animation */

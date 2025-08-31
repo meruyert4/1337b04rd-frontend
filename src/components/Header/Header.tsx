@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useSession } from '../../hooks/useSession';
 import Profile from '../Profile/Profile';
-import './Header.css';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -29,7 +29,9 @@ const Header: React.FC = () => {
         <Link to="/archive" className={currentPage === 'archive' ? 'active' : ''}>Archive</Link>
       </nav>
 
-      <Profile />
+      <div className="header-actions">
+        <Profile />
+      </div>
     </header>
   );
 };

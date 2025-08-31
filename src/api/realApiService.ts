@@ -29,6 +29,7 @@ export class RealApiService {
     const url = `${this.baseUrl}${endpoint}`;
     
     const defaultOptions: RequestInit = {
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -52,15 +53,24 @@ export class RealApiService {
 
   private async makeFormRequest<T>(
     endpoint: string, 
-    formData: FormData
+    formData: FormData,
+    method: string = 'POST'
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
+    console.log('makeFormRequest - URL:', url);
+    console.log('makeFormRequest - credentials: include');
+    console.log('makeFormRequest - method:', method);
+    
     try {
       const response = await fetch(url, {
-        method: 'POST',
+        method: method,
+        credentials: 'include',
         body: formData,
       });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -81,14 +91,16 @@ export class RealApiService {
       include_archived: includeArchived.toString(),
     });
     
-    return this.makeRequest<Post[]>(`/posts?${params}`);
+    return this.makeRequest<Post[]>(`/api/posts?${params}`);
   }
 
   async getPost(id: number): Promise<Post> {
-    return this.makeRequest<Post>(`/posts/${id}`);
+    return this.makeRequest<Post>(`/api/posts/${id}`);
   }
 
   async createPost(postData: CreatePostRequest): Promise<Post> {
+    console.log('Creating post with data:', postData);
+    
     const formData = new FormData();
     formData.append('title', postData.title);
     formData.append('content', postData.content);
@@ -101,6 +113,27 @@ export class RealApiService {
       formData.append('expires_at', postData.expires_at);
     }
 
+    if (postData.author_id) {
+      formData.append('author_id', postData.author_id);
+    }
+
+    if (postData.author_name) {
+      formData.append('author_name', postData.author_name);
+    }
+
+    if (postData.author_image) {
+      formData.append('author_image', postData.author_image);
+    }
+
+    // Debug: Log FormData contents
+    console.log('FormData contents:');
+    formData.forEach((value, key) => {
+      console.log(`${key}: ${value}`);
+    });
+
+    console.log('Sending request to:', `/api/posts`);
+    console.log('With credentials:', 'include');
+    
     const response = await this.makeFormRequest<Post>(`/api/posts`, formData);
     return response;
   }
@@ -114,20 +147,41 @@ export class RealApiService {
     if (request.image) {
       formData.append('image', request.image);
     }
+
+    if (request.author_id) {
+      formData.append('author_id', request.author_id);
+    }
+
+    if (request.author_name) {
+      formData.append('author_name', request.author_name);
+    }
+
+    if (request.author_image) {
+      formData.append('author_image', request.author_image);
+    }
     
-    return this.makeFormRequest<Post>(`/api/posts/${request.id}`, formData);
+    return this.makeFormRequest<Post>(`/api/posts/${request.id}`, formData, 'PUT');
   }
 
   async deletePost(id: number): Promise<void> {
-    return this.makeRequest<void>(`/posts/${id}`, { method: 'DELETE' });
+    return this.makeRequest<void>(`/api/posts/${id}`, { 
+      method: 'DELETE',
+      credentials: 'include'
+    });
   }
 
   async archivePost(id: number): Promise<void> {
-    return this.makeRequest<void>(`/posts/${id}/archive`, { method: 'POST' });
+    return this.makeRequest<void>(`/api/posts/${id}/archive`, { 
+      method: 'POST',
+      credentials: 'include'
+    });
   }
 
   async unarchivePost(id: number): Promise<void> {
-    return this.makeRequest<void>(`/posts/${id}/unarchive`, { method: 'POST' });
+    return this.makeRequest<void>(`/api/posts/${id}/unarchive`, { 
+      method: 'POST',
+      credentials: 'include'
+    });
   }
 
   async getPostsByAuthor(authorId: string, limit: number = 10, offset: number = 0): Promise<Post[]> {
@@ -137,7 +191,7 @@ export class RealApiService {
       offset: offset.toString(),
     });
     
-    return this.makeRequest<Post[]>(`/posts/author?${params}`);
+    return this.makeRequest<Post[]>(`/api/posts/author?${params}`);
   }
 
   // Comments API
@@ -146,7 +200,7 @@ export class RealApiService {
       post_id: postId.toString(),
     });
     
-    return this.makeRequest<Comment[]>(`/comments/post?${params}`);
+    return this.makeRequest<Comment[]>(`/api/comments/post?${params}`);
   }
 
   async createComment(request: CreateCommentRequest): Promise<Comment> {
@@ -178,7 +232,7 @@ export class RealApiService {
     if (request.content) formData.append('content', request.content);
     if (request.image) formData.append('image', request.image);
     
-    return this.makeFormRequest<Comment>(`/api/comments/${id}`, formData);
+    return this.makeFormRequest<Comment>(`/api/comments/${id}`, formData, 'PUT');
   }
 
   async deleteComment(id: number): Promise<void> {
@@ -211,7 +265,7 @@ export class RealApiService {
       formData.append('age', age);
     }
     
-    return this.makeFormRequest<Session>(`/api/sessions/${id}`, formData);
+    return this.makeFormRequest<Session>(`/api/sessions/${id}`, formData, 'PUT');
   }
 
   async deleteSession(id: string): Promise<void> {

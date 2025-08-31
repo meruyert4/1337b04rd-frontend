@@ -4,6 +4,7 @@ export interface Post {
   content: string;
   author_id: string;
   author_name: string;
+  author_image?: string;
   image_url?: string;
   is_archive: boolean;
   created_at: string;
@@ -48,6 +49,9 @@ export interface CreatePostRequest {
   content: string;
   image?: File;
   expires_at?: string;
+  author_id?: string;
+  author_name?: string;
+  author_image?: string;
 }
 
 export interface CreatePostResponse {
@@ -73,6 +77,9 @@ export interface UpdatePostRequest {
   title: string;
   content: string;
   image?: File;
+  author_id?: string;
+  author_name?: string;
+  author_image?: string;
 }
 
 export interface UpdatePostResponse {

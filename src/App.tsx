@@ -1,14 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Header from './components/Header/Header';
-import PostForm, { PostFormData } from './components/PostForm/PostForm';
-import PostList from './components/PostList/PostList';
-import PostCard from './components/PostCard/PostCard';
 import MyPosts from './components/MyPosts/MyPosts';
+import PostForm, { PostFormData } from './components/PostForm/PostForm';
+import PostCard from './components/PostCard/PostCard';
+import PostList from './components/PostList/PostList';
 import { Post, CreatePostRequest, UpdatePostRequest } from './api/types';
 import { api } from './api';
 import { useSession } from './hooks/useSession';
-import './App.css';
+import { ThemeProvider } from './theme';
+
 
 // Main Posts Component (Catalog)
 const PostsCatalog: React.FC = () => {
@@ -17,7 +18,7 @@ const PostsCatalog: React.FC = () => {
   const [showCreateForm, setShowCreateForm] = React.useState(false);
   const [selectedPost, setSelectedPost] = React.useState<Post | null>(null);
   const [viewMode, setViewMode] = React.useState<'list' | 'create' | 'view'>('list');
-  const { userId, userName } = useSession();
+  const { userId, userName, session } = useSession();
 
   React.useEffect(() => {
     loadPosts();
@@ -44,7 +45,10 @@ const PostsCatalog: React.FC = () => {
       const createRequest: CreatePostRequest = {
         title: data.title,
         content: data.content,
-        image: data.image
+        image: data.image,
+        author_id: userId,
+        author_name: userName,
+        author_image: session?.image
       };
       
       console.log('Create request:', createRequest);
@@ -98,7 +102,10 @@ const PostsCatalog: React.FC = () => {
           id: selectedPost.id,
           title: data.title,
           content: data.content,
-          image: data.image
+          image: data.image,
+          author_id: userId,
+          author_name: userName,
+          author_image: session?.image
         };
         
         const updatedPost = await api.updatePost(updateRequest);
@@ -117,7 +124,7 @@ const PostsCatalog: React.FC = () => {
         return (
           <div className="content-section">
             <div className="section-header">
-              <h2>🧬 {selectedPost ? 'Edit Post' : 'Create New Post'}</h2>
+              <h2>{selectedPost ? 'Edit Post' : 'Create New Post'}</h2>
               <button 
                 className="back-btn"
                 onClick={() => {
@@ -141,7 +148,7 @@ const PostsCatalog: React.FC = () => {
         return selectedPost ? (
           <div className="content-section">
             <div className="section-header">
-              <h2>👁️ View Post</h2>
+              <h2>View Post</h2>
               <button 
                 className="back-btn"
                 onClick={() => setViewMode('list')}
@@ -167,7 +174,7 @@ const PostsCatalog: React.FC = () => {
                 className="create-btn"
                 onClick={() => setViewMode('create')}
               >
-                🧬 Create New Post
+                Create New Post
               </button>
             </div>
             <PostList
@@ -177,6 +184,7 @@ const PostsCatalog: React.FC = () => {
               onDeletePost={handleDeletePost}
               loading={loading}
               showActions={true}
+              currentUserId={userId}
             />
           </div>
         );
@@ -221,7 +229,7 @@ const Archive: React.FC = () => {
       <main className="main-content">
         <div className="content-section">
           <div className="section-header">
-            <h2>📚 Archive</h2>
+            <h2>🌌 Archive</h2>
           </div>
           <p>Archive functionality coming soon...</p>
         </div>
@@ -233,21 +241,23 @@ const Archive: React.FC = () => {
 function App() {
   return (
     <Router>
-      <div className="app">
-        <Header />
-        
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/posts" element={<PostsCatalog />} />
-          <Route path="/my-posts" element={<MyPosts />} />
-          <Route path="/archive" element={<Archive />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+      <ThemeProvider>
+        <div className="app">
+          <Header />
+          
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/posts" element={<PostsCatalog />} />
+            <Route path="/my-posts" element={<MyPosts />} />
+            <Route path="/archive" element={<Archive />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
 
-        <footer className="footer">
-          <p>🧬 Built by a Rick who got tired of Reddit. No warranties. Not even existential.</p>
-        </footer>
-      </div>
+          <footer className="footer">
+            <p>🧬 Built by a Rick who got tired of Reddit. No warranties. Not even existential.</p>
+          </footer>
+        </div>
+      </ThemeProvider>
     </Router>
   );
 }
