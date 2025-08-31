@@ -1,13 +1,13 @@
 import React from 'react';
-import { Post } from '../PostForm/PostForm';
+import { Post } from '../../api/types';
 import PostCard from '../PostCard/PostCard';
 import './PostList.css';
 
 interface PostListProps {
   posts: Post[];
-  onViewPost?: (postId: string) => void;
+  onViewPost?: (postId: number) => void;
   onEditPost?: (post: Post) => void;
-  onDeletePost?: (postId: string) => void;
+  onDeletePost?: (postId: number) => void;
   showActions?: boolean;
   compact?: boolean;
   emptyMessage?: string;
@@ -24,6 +24,16 @@ const PostList: React.FC<PostListProps> = ({
   emptyMessage = "No posts found in this dimension. Be the first to create chaos! 🧬",
   loading = false
 }) => {
+  // Safety check - if posts is null/undefined, show loading or empty state
+  if (!posts) {
+    return (
+      <div className="post-list-loading">
+        <div className="loading-spinner"></div>
+        <p>🔄 Initializing posts from the multiverse...</p>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="post-list-loading">
@@ -33,6 +43,7 @@ const PostList: React.FC<PostListProps> = ({
     );
   }
 
+  // Handle empty posts array
   if (posts.length === 0) {
     return (
       <div className="post-list-empty">

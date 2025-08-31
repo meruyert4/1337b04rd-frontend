@@ -1,45 +1,41 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header/Header';
-import PostForm, { PostFormData } from './components/PostForm/PostForm';
-import PostList from './components/PostList/PostList';
-import PostCard from './components/PostCard/PostCard';
-import MyPosts from './components/MyPosts/MyPosts';
-import { Post, CreatePostRequest, UpdatePostRequest } from './api/types';
-import { api } from './api';
-import { useSession } from './hooks/useSession';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import PostList from '../PostList/PostList';
+import PostCard from '../PostCard/PostCard';
+import PostForm, { PostFormData } from '../PostForm/PostForm';
+import { Post, CreatePostRequest, UpdatePostRequest } from '../../api/types';
+import { api } from '../../api';
+import { useSession } from '../../hooks/useSession';
+import './MyPosts.css';
 
-// Main Posts Component (Catalog)
-const PostsCatalog: React.FC = () => {
-  const [posts, setPosts] = React.useState<Post[]>([]);
-  const [loading, setLoading] = React.useState(true);
-  const [showCreateForm, setShowCreateForm] = React.useState(false);
-  const [selectedPost, setSelectedPost] = React.useState<Post | null>(null);
-  const [viewMode, setViewMode] = React.useState<'list' | 'create' | 'view'>('list');
+const MyPosts: React.FC = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'create' | 'view'>('list');
   const { userId, userName } = useSession();
 
-  React.useEffect(() => {
-    loadPosts();
-  }, []);
-
-  const loadPosts = async () => {
+  const loadMyPosts = React.useCallback(async () => {
+    if (!userId) return;
+    
     setLoading(true);
     try {
-      const fetchedPosts = await api.getPosts();
+      const fetchedPosts = await api.getPostsByAuthor(userId);
       setPosts(fetchedPosts || []);
     } catch (error) {
-      console.error('Failed to load posts:', error);
+      console.error('Failed to load my posts:', error);
       setPosts([]);
     }
     setLoading(false);
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) {
+      loadMyPosts();
+    }
+  }, [userId, loadMyPosts]);
 
   const handleCreatePost = async (data: PostFormData) => {
-    console.log('Creating post with data:', data);
-    console.log('Current userId:', userId);
-    console.log('Current userName:', userName);
-    
     try {
       const createRequest: CreatePostRequest = {
         title: data.title,
@@ -47,12 +43,8 @@ const PostsCatalog: React.FC = () => {
         image: data.image
       };
       
-      console.log('Create request:', createRequest);
       const newPost = await api.createPost(createRequest);
-      console.log('Created post:', newPost);
-      
       setPosts(prev => [newPost, ...prev]);
-      setShowCreateForm(false);
       setViewMode('list');
     } catch (error) {
       console.error('Failed to create post:', error);
@@ -125,7 +117,7 @@ const PostsCatalog: React.FC = () => {
                   setSelectedPost(null);
                 }}
               >
-                ← Back to Posts
+                ← Back to My Posts
               </button>
             </div>
             <PostForm
@@ -146,7 +138,7 @@ const PostsCatalog: React.FC = () => {
                 className="back-btn"
                 onClick={() => setViewMode('list')}
               >
-                ← Back to Posts
+                ← Back to My Posts
               </button>
             </div>
             <PostCard
@@ -162,7 +154,7 @@ const PostsCatalog: React.FC = () => {
         return (
           <div className="content-section">
             <div className="section-header">
-              <h2>🌌 Posts from the Multiverse</h2>
+              <h2>🌟 My Posts from the Multiverse</h2>
               <button 
                 className="create-btn"
                 onClick={() => setViewMode('create')}
@@ -170,21 +162,27 @@ const PostsCatalog: React.FC = () => {
                 🧬 Create New Post
               </button>
             </div>
-            <PostList
-              posts={posts}
-              onViewPost={handleViewPost}
-              onEditPost={handleEditPost}
-              onDeletePost={handleDeletePost}
-              loading={loading}
-              showActions={true}
-            />
+            {!userId ? (
+              <div className="no-session-message">
+                <p>Please create a session to view your posts.</p>
+              </div>
+            ) : (
+              <PostList
+                posts={posts}
+                onViewPost={handleViewPost}
+                onEditPost={handleEditPost}
+                onDeletePost={handleDeletePost}
+                loading={loading}
+                showActions={true}
+              />
+            )}
           </div>
         );
     }
   };
 
   return (
-    <div className="posts-catalog">
+    <div className="my-posts">
       <main className="main-content">
         {renderContent()}
       </main>
@@ -192,64 +190,4 @@ const PostsCatalog: React.FC = () => {
   );
 };
 
-// Home Component
-const Home: React.FC = () => {
-  return (
-    <div className="home">
-      <main className="main-content">
-        <div className="content-section">
-          <div className="section-header">
-            <h2>🌌 Welcome to 1337b04rd</h2>
-          </div>
-          <div className="welcome-content">
-            <p>Welcome to the multiverse of posts! Explore posts from across dimensions or create your own.</p>
-            <div className="welcome-actions">
-              <a href="/posts" className="welcome-btn">Browse Posts</a>
-              <a href="/my-posts" className="welcome-btn">My Posts</a>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
-  );
-};
-
-// Archive Component
-const Archive: React.FC = () => {
-  return (
-    <div className="archive">
-      <main className="main-content">
-        <div className="content-section">
-          <div className="section-header">
-            <h2>📚 Archive</h2>
-          </div>
-          <p>Archive functionality coming soon...</p>
-        </div>
-      </main>
-    </div>
-  );
-};
-
-function App() {
-  return (
-    <Router>
-      <div className="app">
-        <Header />
-        
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/posts" element={<PostsCatalog />} />
-          <Route path="/my-posts" element={<MyPosts />} />
-          <Route path="/archive" element={<Archive />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-
-        <footer className="footer">
-          <p>🧬 Built by a Rick who got tired of Reddit. No warranties. Not even existential.</p>
-        </footer>
-      </div>
-    </Router>
-  );
-}
-
-export default App;
+export default MyPosts;

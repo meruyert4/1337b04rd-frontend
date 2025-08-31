@@ -1,19 +1,35 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import Profile from '../Profile/Profile';
 import './Header.css';
 
-interface HeaderProps {
-  currentPage?: string;
-}
+const Header: React.FC = () => {
+  const location = useLocation();
+  
+  const getCurrentPage = () => {
+    if (location.pathname === '/') return 'home';
+    if (location.pathname === '/posts') return 'posts';
+    if (location.pathname === '/my-posts') return 'my-posts';
+    if (location.pathname === '/archive') return 'archive';
+    return 'home';
+  };
 
-const Header: React.FC<HeaderProps> = ({ currentPage = 'home' }) => {
+  const currentPage = getCurrentPage();
+
   return (
     <header className="transparent-header">
-      <div className="logo">1337b04rd</div>
+      <div className="logo">
+        <Link to="/">1337b04rd</Link>
+      </div>
+      
       <nav>
-        <a href="/" className={currentPage === 'home' ? 'active' : ''}>Home</a>
-        <a href="/posts" className={currentPage === 'posts' ? 'active' : ''}>Catalog</a>
-        <a href="/archive" className={currentPage === 'archive' ? 'active' : ''}>Archive</a>
+        <Link to="/" className={currentPage === 'home' ? 'active' : ''}>Home</Link>
+        <Link to="/posts" className={currentPage === 'posts' ? 'active' : ''}>Catalog</Link>
+        <Link to="/my-posts" className={currentPage === 'my-posts' ? 'active' : ''}>My Posts</Link>
+        <Link to="/archive" className={currentPage === 'archive' ? 'active' : ''}>Archive</Link>
       </nav>
+
+      <Profile />
     </header>
   );
 };

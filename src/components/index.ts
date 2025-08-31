@@ -5,4 +5,4 @@ export { default as PostCard } from './PostCard/PostCard';
 export { default as PostList } from './PostList/PostList';
 
 // Export types
-export type { Post, PostFormData } from './PostForm/PostForm';
+export type { PostFormData } from './PostForm/PostForm';

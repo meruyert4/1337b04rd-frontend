@@ -1,12 +1,12 @@
 import React from 'react';
-import { Post } from '../PostForm/PostForm';
+import { Post } from '../../api/types';
 import './PostCard.css';
 
 interface PostCardProps {
   post: Post;
-  onView?: (postId: string) => void;
+  onView?: (postId: number) => void;
   onEdit?: (post: Post) => void;
-  onDelete?: (postId: string) => void;
+  onDelete?: (postId: number) => void;
   showActions?: boolean;
   compact?: boolean;
 }
@@ -54,10 +54,10 @@ const PostCard: React.FC<PostCardProps> = ({
           {post.title}
         </h3>
         <div className="post-meta">
-          {post.authorName && (
-            <span className="post-author">👤 {post.authorName}</span>
+          {post.author_name && (
+            <span className="post-author">👤 {post.author_name}</span>
           )}
-          <span className="post-date">🕐 {formatDate(post.createdAt)}</span>
+          <span className="post-date">🕐 {formatDate(post.created_at)}</span>
         </div>
       </div>
 
@@ -66,10 +66,10 @@ const PostCard: React.FC<PostCardProps> = ({
           {compact ? truncateContent(post.content) : post.content}
         </p>
         
-        {post.imageURL && (
+        {post.image_url && (
           <div className="post-image-container">
             <img 
-              src={post.imageURL} 
+              src={post.image_url} 
               alt={post.title}
               className="post-image"
               onClick={handleView}

@@ -1,14 +1,8 @@
 import React, { useState } from 'react';
 import './PostForm.css';
 
-export interface Post {
-  id: string;
-  title: string;
-  content: string;
-  imageURL?: string;
-  createdAt: string;
-  authorName?: string;
-}
+// Use the API types instead of local ones
+import { Post } from '../../api/types';
 
 export interface PostFormData {
   title: string;
@@ -20,7 +14,7 @@ interface PostFormProps {
   onSubmit: (data: PostFormData) => void;
   isLoading?: boolean;
   submitButtonText?: string;
-  initialData?: Partial<PostFormData>;
+  initialData?: Partial<PostFormData> | Post;
   mode?: 'create' | 'edit';
 }
 
@@ -34,9 +28,14 @@ const PostForm: React.FC<PostFormProps> = ({
   const [formData, setFormData] = useState<PostFormData>({
     title: initialData.title || '',
     content: initialData.content || '',
-    image: initialData.image
+    image: 'image' in initialData ? initialData.image : undefined
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    // Show existing image if editing and image_url exists
+    mode === 'edit' && 'image_url' in initialData && initialData.image_url 
+      ? initialData.image_url 
+      : null
+  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -131,6 +130,20 @@ const PostForm: React.FC<PostFormProps> = ({
                 className="remove-image-btn"
               >
                 ✕ Remove
+              </button>
+            </div>
+          )}
+          
+          {/* Show existing image info when editing */}
+          {mode === 'edit' && 'image_url' in initialData && initialData.image_url && !imagePreview && (
+            <div className="existing-image-info">
+              <p>📷 Existing image: {initialData.image_url}</p>
+              <button
+                type="button"
+                onClick={() => setImagePreview(initialData.image_url!)}
+                className="show-image-btn"
+              >
+                Show Image
               </button>
             </div>
           )}
