@@ -59,7 +59,7 @@ const PostCard: React.FC<PostCardProps> = ({
           {post.author_name && (
             <div className="post-author-section">
               <div className="post-author-avatar">
-                {post.author_image ? (
+                {post.author_image && post.author_image.trim() !== '' ? (
                   <img 
                     src={post.author_image} 
                     alt={post.author_name}
@@ -70,7 +70,7 @@ const PostCard: React.FC<PostCardProps> = ({
                     }}
                   />
                 ) : null}
-                <div className={`post-author-placeholder ${post.author_image ? 'hidden' : ''}`}>
+                <div className={`post-author-placeholder ${post.author_image && post.author_image.trim() !== '' ? 'hidden' : ''}`}>
                   {post.author_name.charAt(0).toUpperCase()}
                 </div>
               </div>

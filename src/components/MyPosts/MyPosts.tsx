@@ -42,8 +42,7 @@ const MyPosts: React.FC = () => {
         content: data.content,
         image: data.image,
         author_id: userId,
-        author_name: userName,
-        author_image: session?.image
+        author_name: userName
       };
       
       const newPost = await api.createPost(createRequest);
@@ -95,8 +94,7 @@ const MyPosts: React.FC = () => {
           content: data.content,
           image: data.image,
           author_id: userId,
-          author_name: userName,
-          author_image: session?.image
+          author_name: userName
         };
         
         const updatedPost = await api.updatePost(updateRequest);

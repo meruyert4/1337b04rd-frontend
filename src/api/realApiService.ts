@@ -121,10 +121,6 @@ export class RealApiService {
       formData.append('author_name', postData.author_name);
     }
 
-    if (postData.author_image) {
-      formData.append('author_image', postData.author_image);
-    }
-
     // Debug: Log FormData contents
     console.log('FormData contents:');
     formData.forEach((value, key) => {
@@ -154,10 +150,6 @@ export class RealApiService {
 
     if (request.author_name) {
       formData.append('author_name', request.author_name);
-    }
-
-    if (request.author_image) {
-      formData.append('author_image', request.author_image);
     }
     
     return this.makeFormRequest<Post>(`/api/posts/${request.id}`, formData, 'PUT');

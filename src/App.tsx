@@ -47,8 +47,7 @@ const PostsCatalog: React.FC = () => {
         content: data.content,
         image: data.image,
         author_id: userId,
-        author_name: userName,
-        author_image: session?.image
+        author_name: userName
       };
       
       console.log('Create request:', createRequest);
@@ -104,8 +103,7 @@ const PostsCatalog: React.FC = () => {
           content: data.content,
           image: data.image,
           author_id: userId,
-          author_name: userName,
-          author_image: session?.image
+          author_name: userName
         };
         
         const updatedPost = await api.updatePost(updateRequest);

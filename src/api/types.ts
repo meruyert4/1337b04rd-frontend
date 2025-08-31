@@ -51,7 +51,6 @@ export interface CreatePostRequest {
   expires_at?: string;
   author_id?: string;
   author_name?: string;
-  author_image?: string;
 }
 
 export interface CreatePostResponse {
@@ -79,7 +78,6 @@ export interface UpdatePostRequest {
   image?: File;
   author_id?: string;
   author_name?: string;
-  author_image?: string;
 }
 
 export interface UpdatePostResponse {
