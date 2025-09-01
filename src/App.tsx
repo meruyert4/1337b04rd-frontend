@@ -1,11 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header/Header';
+import { 
+  Header, 
+  PostForm, 
+  PostCard, 
+  PostList, 
+  Archive, 
+  CharacterCard, 
+  CharacterList 
+} from './components';
+import { PostFormData } from './components';
 import MyPosts from './components/MyPosts/MyPosts';
-import PostForm, { PostFormData } from './components/PostForm/PostForm';
-import PostCard from './components/PostCard/PostCard';
-import PostList from './components/PostList/PostList';
-import { Post, CreatePostRequest, UpdatePostRequest } from './api/types';
+import { Post, Character, CreatePostRequest, UpdatePostRequest } from './api/types';
 import { api } from './api';
 import { useSession } from './hooks/useSession';
 import { ThemeProvider } from './theme';
@@ -229,8 +235,43 @@ const PostsCatalog: React.FC = () => {
   );
 };
 
+// Home Component Props Interface
+interface HomeProps {
+  characters: Character[];
+  allCharacters: Character[];
+  loading: boolean;
+  onLoadMore: (newCharacters: Character[]) => void;
+}
+
 // Home Component
-const Home: React.FC = () => {
+const Home: React.FC<HomeProps> = ({ characters, allCharacters, loading, onLoadMore }) => {
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0);
+  const charactersPerPage = 6;
+  
+  // Calculate if there are more characters to load
+  const hasMore = characters.length < allCharacters.length;
+
+  const loadMoreCharacters = () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+    const startIndex = nextPage * charactersPerPage;
+    const endIndex = startIndex + charactersPerPage;
+    
+    // Use the already loaded characters instead of making a new API call
+    const newCharacters = allCharacters.slice(startIndex, endIndex);
+    
+    if (newCharacters.length > 0) {
+      const updatedCharacters = [...characters, ...newCharacters];
+      onLoadMore(updatedCharacters);
+      setCurrentPage(nextPage);
+    }
+    
+    setLoadingMore(false);
+  };
+
   return (
     <div className="home">
       <main className="main-content">
@@ -238,12 +279,20 @@ const Home: React.FC = () => {
           <div className="section-header">
             <h2>🌌 Welcome to 1337b04rd</h2>
           </div>
+          
           <div className="welcome-content">
             <p>Welcome to the multiverse of posts! Explore posts from across dimensions or create your own.</p>
-            <div className="welcome-actions">
-              <a href="/posts" className="welcome-btn">Browse Posts</a>
-              <a href="/my-posts" className="welcome-btn">My Posts</a>
-            </div>
+          </div>
+
+          <div className="characters-section">
+            <h3>👥 Characters from the Multiverse</h3>
+            <CharacterList 
+              characters={characters}
+              loading={loading}
+              loadingMore={loadingMore}
+              onLoadMore={hasMore ? loadMoreCharacters : undefined}
+              hasMore={hasMore}
+            />
           </div>
         </div>
       </main>
@@ -251,108 +300,40 @@ const Home: React.FC = () => {
   );
 };
 
-// Archive Component
-const Archive: React.FC = () => {
-  const [posts, setPosts] = useState<Post[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [viewMode, setViewMode] = useState<'list' | 'view'>('list');
-  const { userId } = useSession();
 
-  useEffect(() => {
-    fetchArchivedPosts();
-  }, []);
-
-  const fetchArchivedPosts = async () => {
-    try {
-      setLoading(true);
-      const allPosts = await api.getPosts(100, 0, true); // include_archived = true
-      // Filter only archived posts
-      const archivedPosts = allPosts.filter(post => post.is_archive);
-      setPosts(archivedPosts);
-    } catch (error) {
-      console.error('Failed to fetch archived posts:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleViewPost = (postId: number) => {
-    const post = posts.find(p => p.id === postId);
-    if (post) {
-      setSelectedPost(post);
-      setViewMode('view');
-    }
-  };
-
-  const handleUnarchivePost = async (postId: number) => {
-    if (window.confirm('Are you sure you want to unarchive this post? It will be moved back to the main posts.')) {
-      try {
-        await api.unarchivePost(postId);
-        setPosts(prev => prev.filter(p => p.id !== postId));
-        if (selectedPost?.id === postId) {
-          setSelectedPost(null);
-          setViewMode('list');
-        }
-      } catch (error) {
-        console.error('Failed to unarchive post:', error);
-      }
-    }
-  };
-
-  const renderContent = () => {
-    switch (viewMode) {
-      case 'view':
-        return selectedPost ? (
-          <div className="content-section">
-            <div className="section-header">
-              <h2>View Archived Post</h2>
-              <button 
-                className="back-btn"
-                onClick={() => setViewMode('list')}
-              >
-                ← Back to Archive
-              </button>
-            </div>
-            <PostCard
-              post={selectedPost}
-              showActions={true}
-              onUnarchive={handleUnarchivePost}
-            />
-          </div>
-        ) : null;
-
-      default:
-        return (
-          <div className="content-section">
-            <div className="section-header">
-              <h2>🌌 Archive</h2>
-            </div>
-            <PostList
-              posts={posts}
-              onViewPost={handleViewPost}
-              onUnarchivePost={handleUnarchivePost}
-              loading={loading}
-              showActions={true}
-              compact={true}
-              currentUserId={userId}
-              emptyMessage="No archived posts found. The multiverse is clean!"
-            />
-          </div>
-        );
-    }
-  };
-
-  return (
-    <div className="archive">
-      <main className="main-content">
-        {renderContent()}
-      </main>
-    </div>
-  );
-};
 
 function App() {
+  // Character state moved to App level to persist across tab switches
+  const [characters, setCharacters] = useState<Character[]>([]);
+  const [allCharacters, setAllCharacters] = useState<Character[]>([]);
+  const [charactersLoading, setCharactersLoading] = useState(true);
+  const [charactersLoaded, setCharactersLoaded] = useState(false);
+
+  // Load characters once when app starts
+  useEffect(() => {
+    if (!charactersLoaded) {
+      loadCharacters();
+    }
+  }, [charactersLoaded]);
+
+  const loadCharacters = useCallback(async () => {
+    try {
+      setCharactersLoading(true);
+      const fetchedCharacters = await api.getAllCharacters();
+      setAllCharacters(fetchedCharacters);
+      setCharacters(fetchedCharacters.slice(0, 6)); // Show first 6 characters
+      setCharactersLoaded(true);
+    } catch (error) {
+      console.error('Failed to load characters:', error);
+    } finally {
+      setCharactersLoading(false);
+    }
+  }, []);
+
+  const handleLoadMore = useCallback((newCharacters: Character[]) => {
+    setCharacters(newCharacters);
+  }, []);
+
   return (
     <Router>
       <ThemeProvider>
@@ -360,7 +341,14 @@ function App() {
           <Header />
           
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={
+              <Home 
+                characters={characters}
+                allCharacters={allCharacters}
+                loading={charactersLoading}
+                onLoadMore={handleLoadMore}
+              />
+            } />
             <Route path="/posts" element={<PostsCatalog />} />
             <Route path="/my-posts" element={<MyPosts />} />
             <Route path="/archive" element={<Archive />} />

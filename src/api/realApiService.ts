@@ -209,6 +209,15 @@ export class RealApiService {
     return this.makeRequest<Post[]>(`/api/posts/author?${params}`);
   }
 
+  // Character API (Rick and Morty)
+  async getRandomCharacter(): Promise<Character> {
+    return this.makeRequest<Character>('/api/characters/random');
+  }
+
+  async getAllCharacters(): Promise<Character[]> {
+    return this.makeRequest<Character[]>('/api/characters');
+  }
+
   // Comments API
   async getCommentsByPost(postId: number): Promise<Comment[]> {
     const params = new URLSearchParams({

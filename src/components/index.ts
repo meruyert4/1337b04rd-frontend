@@ -3,6 +3,9 @@ export { default as Header } from './Header/Header';
 export { default as PostForm } from './PostForm/PostForm';
 export { default as PostCard } from './PostCard/PostCard';
 export { default as PostList } from './PostList/PostList';
+export { default as Archive } from './Archive/Archive';
+export { default as CharacterCard } from './Character/CharacterCard';
+export { default as CharacterList } from './Character/CharacterList';
 
 // Export types
 export type { PostFormData } from './PostForm/PostForm';

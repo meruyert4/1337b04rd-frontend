@@ -39,6 +39,15 @@ export interface ApiService {
 }
 
 class UnifiedApiService {
+  // Character API (Rick and Morty)
+  async getRandomCharacter(): Promise<Character> {
+    return await realApiService.getRandomCharacter();
+  }
+
+  async getAllCharacters(): Promise<Character[]> {
+    return await realApiService.getAllCharacters();
+  }
+
   // Posts API
   async getPosts(limit: number = 10, offset: number = 0, includeArchived: boolean = false): Promise<Post[]> {
     return await realApiService.getPosts(limit, offset, includeArchived);
