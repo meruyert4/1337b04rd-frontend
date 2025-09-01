@@ -30,12 +30,6 @@ const PostForm: React.FC<PostFormProps> = ({
     content: initialData.content || '',
     image: 'image' in initialData ? initialData.image : undefined
   });
-  const [imagePreview, setImagePreview] = useState<string | null>(
-    // Show existing image if editing and image_url exists
-    mode === 'edit' && 'image_url' in initialData && initialData.image_url 
-      ? initialData.image_url 
-      : null
-  );
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -51,16 +45,6 @@ const PostForm: React.FC<PostFormProps> = ({
       ...prev,
       image: file
     }));
-
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
-    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -72,15 +56,10 @@ const PostForm: React.FC<PostFormProps> = ({
 
   const removeImage = () => {
     setFormData(prev => ({ ...prev, image: undefined }));
-    setImagePreview(null);
   };
 
   return (
-    <div className="post-form-container">
-      <h3 className="form-title">
-        {mode === 'create' ? 'Add a Post:' : 'Edit Post:'}
-      </h3>
-      
+    <div className="post-form-container"> 
       <form onSubmit={handleSubmit} className="post-form">
         <div className="form-group">
           <label htmlFor="title" className="form-label">Title:</label>
@@ -121,30 +100,27 @@ const PostForm: React.FC<PostFormProps> = ({
             className="form-file-input"
           />
           
-          {imagePreview && (
-            <div className="image-preview-container">
-              <img src={imagePreview} alt="Preview" className="image-preview" />
-                  <button
-                  type="button"
-                  onClick={removeImage}
-                  className="remove-image-btn"
-                >
-                  Remove
-                </button>
+          {formData.image && (
+            <div className="image-attachment-container">
+              <div className="attachment-indicator">
+                📎 {formData.image.name}
+              </div>
+              <button
+                type="button"
+                onClick={removeImage}
+                className="remove-image-btn"
+              >
+                Remove
+              </button>
             </div>
           )}
           
           {/* Show existing image info when editing */}
-          {mode === 'edit' && 'image_url' in initialData && initialData.image_url && !imagePreview && (
+          {mode === 'edit' && 'image_url' in initialData && initialData.image_url && !formData.image && (
             <div className="existing-image-info">
-              <p>📷 Existing image: {initialData.image_url}</p>
-              <button
-                type="button"
-                onClick={() => setImagePreview(initialData.image_url!)}
-                className="show-image-btn"
-              >
-                Show Image
-              </button>
+              <div className="attachment-indicator">
+                📎 Existing image attached
+              </div>
             </div>
           )}
         </div>

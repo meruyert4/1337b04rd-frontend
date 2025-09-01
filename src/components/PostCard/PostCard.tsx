@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Post } from '../../api/types';
+import { detectImageOrientation, getImageSizeClass, ImageOrientation } from '../../utils/imageUtils';
 
 
 interface PostCardProps {
@@ -7,6 +8,8 @@ interface PostCardProps {
   onView?: (postId: number) => void;
   onEdit?: (post: Post) => void;
   onDelete?: (postId: number) => void;
+  onArchive?: (postId: number) => void;
+  onUnarchive?: (postId: number) => void;
   showActions?: boolean;
   compact?: boolean;
   currentUserId?: string;
@@ -17,10 +20,21 @@ const PostCard: React.FC<PostCardProps> = ({
   onView,
   onEdit,
   onDelete,
+  onArchive,
+  onUnarchive,
   showActions = true,
   compact = false,
   currentUserId 
 }) => {
+  const [imageOrientation, setImageOrientation] = useState<ImageOrientation>('default');
+
+  // Detect image orientation when image URL changes
+  useEffect(() => {
+    if (post.image_url && !compact) {
+      detectImageOrientation(post.image_url).then(setImageOrientation);
+    }
+  }, [post.image_url, compact]);
+
   const handleView = () => {
     if (onView) onView(post.id);
   };
@@ -88,12 +102,18 @@ const PostCard: React.FC<PostCardProps> = ({
         
         {post.image_url && (
           <div className="post-image-container">
-            <img 
-              src={post.image_url} 
-              alt={post.title}
-              className="post-image"
-              onClick={handleView}
-            />
+            {compact ? (
+              <div className="attachment-indicator" onClick={handleView}>
+                📎 Attachment
+              </div>
+            ) : (
+              <img 
+                src={post.image_url} 
+                alt={post.title}
+                className={`post-image ${getImageSizeClass(imageOrientation)}`}
+                onClick={handleView}
+              />
+            )}
           </div>
         )}
       </div>
@@ -126,12 +146,24 @@ const PostCard: React.FC<PostCardProps> = ({
               Delete
             </button>
           )}
-        </div>
-      )}
-
-      {!compact && (
-        <div className="post-footer">
-          <span className="post-id">ID: {post.id}</span>
+          
+          {onArchive && currentUserId && post.author_id === currentUserId && !post.is_archive && (
+            <button 
+              className="action-btn archive-btn"
+              onClick={() => onArchive(post.id)}
+            >
+              Archive
+            </button>
+          )}
+          
+          {onUnarchive && currentUserId && post.author_id === currentUserId && post.is_archive && (
+            <button 
+              className="action-btn unarchive-btn"
+              onClick={() => onUnarchive(post.id)}
+            >
+              Unarchive
+            </button>
+          )}
         </div>
       )}
     </div>

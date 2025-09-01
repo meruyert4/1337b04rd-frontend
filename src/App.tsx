@@ -94,6 +94,34 @@ const PostsCatalog: React.FC = () => {
     }
   };
 
+  const handleArchivePost = async (postId: number) => {
+    if (window.confirm('Are you sure you want to archive this post? It will be moved to the Archive tab.')) {
+      try {
+        console.log('Archiving post:', postId);
+        await api.archivePost(postId);
+        console.log('Post archived successfully, updating local state');
+        
+        // Remove the post from local state immediately
+        setPosts(prev => {
+          const updatedPosts = prev.filter(p => p.id !== postId);
+          console.log('Updated posts count:', updatedPosts.length);
+          return updatedPosts;
+        });
+        
+        // If the archived post was being viewed, go back to list
+        if (selectedPost?.id === postId) {
+          setSelectedPost(null);
+          setViewMode('list');
+        }
+        
+        console.log('Post successfully archived and removed from catalog');
+      } catch (error) {
+        console.error('Failed to archive post:', error);
+        alert('Failed to archive post. Please try again.');
+      }
+    }
+  };
+
   const handleUpdatePost = async (data: PostFormData) => {
     if (selectedPost) {
       try {
@@ -159,6 +187,7 @@ const PostsCatalog: React.FC = () => {
               showActions={true}
               onEdit={() => setViewMode('create')}
               onDelete={handleDeletePost}
+              onArchive={handleArchivePost}
             />
           </div>
         ) : null;
@@ -180,8 +209,10 @@ const PostsCatalog: React.FC = () => {
               onViewPost={handleViewPost}
               onEditPost={handleEditPost}
               onDeletePost={handleDeletePost}
+              onArchivePost={handleArchivePost}
               loading={loading}
               showActions={true}
+              compact={true}
               currentUserId={userId}
             />
           </div>
@@ -222,15 +253,100 @@ const Home: React.FC = () => {
 
 // Archive Component
 const Archive: React.FC = () => {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [viewMode, setViewMode] = useState<'list' | 'view'>('list');
+  const { userId } = useSession();
+
+  useEffect(() => {
+    fetchArchivedPosts();
+  }, []);
+
+  const fetchArchivedPosts = async () => {
+    try {
+      setLoading(true);
+      const allPosts = await api.getPosts(100, 0, true); // include_archived = true
+      // Filter only archived posts
+      const archivedPosts = allPosts.filter(post => post.is_archive);
+      setPosts(archivedPosts);
+    } catch (error) {
+      console.error('Failed to fetch archived posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewPost = (postId: number) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setSelectedPost(post);
+      setViewMode('view');
+    }
+  };
+
+  const handleUnarchivePost = async (postId: number) => {
+    if (window.confirm('Are you sure you want to unarchive this post? It will be moved back to the main posts.')) {
+      try {
+        await api.unarchivePost(postId);
+        setPosts(prev => prev.filter(p => p.id !== postId));
+        if (selectedPost?.id === postId) {
+          setSelectedPost(null);
+          setViewMode('list');
+        }
+      } catch (error) {
+        console.error('Failed to unarchive post:', error);
+      }
+    }
+  };
+
+  const renderContent = () => {
+    switch (viewMode) {
+      case 'view':
+        return selectedPost ? (
+          <div className="content-section">
+            <div className="section-header">
+              <h2>View Archived Post</h2>
+              <button 
+                className="back-btn"
+                onClick={() => setViewMode('list')}
+              >
+                ← Back to Archive
+              </button>
+            </div>
+            <PostCard
+              post={selectedPost}
+              showActions={true}
+              onUnarchive={handleUnarchivePost}
+            />
+          </div>
+        ) : null;
+
+      default:
+        return (
+          <div className="content-section">
+            <div className="section-header">
+              <h2>🌌 Archive</h2>
+            </div>
+            <PostList
+              posts={posts}
+              onViewPost={handleViewPost}
+              onUnarchivePost={handleUnarchivePost}
+              loading={loading}
+              showActions={true}
+              compact={true}
+              currentUserId={userId}
+              emptyMessage="No archived posts found. The multiverse is clean!"
+            />
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="archive">
       <main className="main-content">
-        <div className="content-section">
-          <div className="section-header">
-            <h2>🌌 Archive</h2>
-          </div>
-          <p>Archive functionality coming soon...</p>
-        </div>
+        {renderContent()}
       </main>
     </div>
   );

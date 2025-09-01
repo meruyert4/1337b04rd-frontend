@@ -8,6 +8,8 @@ interface PostListProps {
   onViewPost?: (postId: number) => void;
   onEditPost?: (post: Post) => void;
   onDeletePost?: (postId: number) => void;
+  onArchivePost?: (postId: number) => void;
+  onUnarchivePost?: (postId: number) => void;
   showActions?: boolean;
   compact?: boolean;
   emptyMessage?: string;
@@ -20,6 +22,8 @@ const PostList: React.FC<PostListProps> = ({
   onViewPost,
   onEditPost,
   onDeletePost,
+  onArchivePost,
+  onUnarchivePost,
   showActions = true,
   compact = false,
   emptyMessage = "No posts found in this dimension. Be the first to create chaos!",
@@ -65,6 +69,8 @@ const PostList: React.FC<PostListProps> = ({
           onView={onViewPost}
           onEdit={onEditPost}
           onDelete={onDeletePost}
+          onArchive={onArchivePost}
+          onUnarchive={onUnarchivePost}
           showActions={showActions}
           compact={compact}
           currentUserId={currentUserId}

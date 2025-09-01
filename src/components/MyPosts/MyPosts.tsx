@@ -85,6 +85,34 @@ const MyPosts: React.FC = () => {
     }
   };
 
+  const handleArchivePost = async (postId: number) => {
+    if (window.confirm('Are you sure you want to archive this post? It will be moved to the Archive tab.')) {
+      try {
+        console.log('Archiving post from MyPosts:', postId);
+        await api.archivePost(postId);
+        console.log('Post archived successfully, updating local state');
+        
+        // Remove the post from local state immediately
+        setPosts(prev => {
+          const updatedPosts = prev.filter(p => p.id !== postId);
+          console.log('Updated MyPosts count:', updatedPosts.length);
+          return updatedPosts;
+        });
+        
+        // If the archived post was being viewed, go back to list
+        if (selectedPost?.id === postId) {
+          setSelectedPost(null);
+          setViewMode('list');
+        }
+        
+        console.log('Post successfully archived and removed from MyPosts');
+      } catch (error) {
+        console.error('Failed to archive post:', error);
+        alert('Failed to archive post. Please try again.');
+      }
+    }
+  };
+
   const handleUpdatePost = async (data: PostFormData) => {
     if (selectedPost) {
       try {
@@ -150,6 +178,7 @@ const MyPosts: React.FC = () => {
               showActions={true}
               onEdit={() => setViewMode('create')}
               onDelete={handleDeletePost}
+              onArchive={handleArchivePost}
             />
           </div>
         ) : null;
@@ -176,8 +205,10 @@ const MyPosts: React.FC = () => {
                 onViewPost={handleViewPost}
                 onEditPost={handleEditPost}
                 onDeletePost={handleDeletePost}
+                onArchivePost={handleArchivePost}
                 loading={loading}
                 showActions={true}
+                compact={true}
                 currentUserId={userId}
               />
             )}

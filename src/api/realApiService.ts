@@ -44,7 +44,16 @@ export class RealApiService {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       
-      return await response.json();
+      // Check if response has content to parse as JSON
+      const contentType = response.headers.get('content-type');
+      const contentLength = response.headers.get('content-length');
+      
+      if (contentType && contentType.includes('application/json') && contentLength !== '0') {
+        return await response.json();
+      } else {
+        // For empty responses (like archive/unarchive), return undefined
+        return undefined as T;
+      }
     } catch (error) {
       console.error('API request failed:', error);
       throw error;
@@ -163,17 +172,31 @@ export class RealApiService {
   }
 
   async archivePost(id: number): Promise<void> {
-    return this.makeRequest<void>(`/api/posts/${id}/archive`, { 
-      method: 'POST',
-      credentials: 'include'
-    });
+    console.log('API: Archiving post with ID:', id);
+    try {
+      await this.makeRequest<void>(`/api/posts/${id}/archive`, { 
+        method: 'POST',
+        credentials: 'include'
+      });
+      console.log('API: Archive request successful');
+    } catch (error) {
+      console.error('API: Archive request failed:', error);
+      throw error;
+    }
   }
 
   async unarchivePost(id: number): Promise<void> {
-    return this.makeRequest<void>(`/api/posts/${id}/unarchive`, { 
-      method: 'POST',
-      credentials: 'include'
-    });
+    console.log('API: Unarchiving post with ID:', id);
+    try {
+      await this.makeRequest<void>(`/api/posts/${id}/unarchive`, { 
+        method: 'POST',
+        credentials: 'include'
+      });
+      console.log('API: Unarchive request successful');
+    } catch (error) {
+      console.error('API: Unarchive request failed:', error);
+      throw error;
+    }
   }
 
   async getPostsByAuthor(authorId: string, limit: number = 10, offset: number = 0): Promise<Post[]> {
