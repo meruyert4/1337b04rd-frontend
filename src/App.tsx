@@ -15,29 +15,42 @@ import { Post, Character, CreatePostRequest, UpdatePostRequest } from './api/typ
 import { api } from './api';
 import { useSession } from './hooks/useSession';
 import { ThemeProvider } from './theme';
+import { PAGINATION, getOffsetFromPage } from './constants/pagination';
 
 
 // Main Posts Component (Catalog)
 const PostsCatalog: React.FC = () => {
   const [posts, setPosts] = React.useState<Post[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [totalPosts, setTotalPosts] = React.useState(0);
+  const [currentPage, setCurrentPage] = React.useState(1);
   const [showCreateForm, setShowCreateForm] = React.useState(false);
   const [selectedPost, setSelectedPost] = React.useState<Post | null>(null);
   const [viewMode, setViewMode] = React.useState<'list' | 'create' | 'view'>('list');
   const { userId, userName, session } = useSession();
 
   React.useEffect(() => {
-    loadPosts();
-  }, []);
+    loadPosts(currentPage);
+  }, [currentPage]);
 
-  const loadPosts = async () => {
+  const loadPosts = async (page: number = 1) => {
     setLoading(true);
     try {
-      const fetchedPosts = await api.getPosts();
-      setPosts(fetchedPosts || []);
+      // Get all posts with a high limit to ensure we capture everything
+      const allPosts = await api.getPosts(PAGINATION.TOTAL_POSTS_LIMIT, 0);
+      const totalCount = allPosts?.length || 0;
+      setTotalPosts(totalCount);
+      
+      // Apply pagination to the fetched posts
+      const offset = getOffsetFromPage(page, PAGINATION.POSTS_PER_PAGE);
+      const paginatedPosts = allPosts?.slice(offset, offset + PAGINATION.POSTS_PER_PAGE) || [];
+      setPosts(paginatedPosts);
+      
+      console.log(`Loaded ${totalCount} total posts, showing page ${page} with ${paginatedPosts.length} posts`);
     } catch (error) {
       console.error('Failed to load posts:', error);
       setPosts([]);
+      setTotalPosts(0);
     }
     setLoading(false);
   };
@@ -126,6 +139,10 @@ const PostsCatalog: React.FC = () => {
         alert('Failed to archive post. Please try again.');
       }
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const handleUpdatePost = async (data: PostFormData) => {
@@ -220,6 +237,11 @@ const PostsCatalog: React.FC = () => {
               showActions={true}
               compact={true}
               currentUserId={userId}
+              // Pagination props
+              currentPage={currentPage}
+              totalItems={totalPosts}
+              onPageChange={handlePageChange}
+              showPagination={true}
             />
           </div>
         );

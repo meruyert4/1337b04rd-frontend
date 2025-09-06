@@ -1,6 +1,8 @@
 import React from 'react';
 import { Post } from '../../api/types';
 import PostCard from '../PostCard/PostCard';
+import Pagination from '../Pagination';
+import { PAGINATION } from '../../constants/pagination';
 
 
 interface PostListProps {
@@ -15,6 +17,11 @@ interface PostListProps {
   emptyMessage?: string;
   loading?: boolean;
   currentUserId?: string;
+  // Pagination props
+  currentPage?: number;
+  totalItems?: number;
+  onPageChange?: (page: number) => void;
+  showPagination?: boolean;
 }
 
 const PostList: React.FC<PostListProps> = ({
@@ -28,7 +35,12 @@ const PostList: React.FC<PostListProps> = ({
   compact = false,
   emptyMessage = "No posts found in this dimension. Be the first to create chaos!",
   loading = false,
-  currentUserId
+  currentUserId,
+  // Pagination props
+  currentPage = 1,
+  totalItems,
+  onPageChange,
+  showPagination = false
 }) => {
   // Safety check - if posts is null/undefined, show loading or empty state
   if (!posts) {
@@ -61,21 +73,32 @@ const PostList: React.FC<PostListProps> = ({
   }
 
   return (
-    <div className="post-list">
-      {posts.map((post) => (
-        <PostCard
-          key={post.id}
-          post={post}
-          onView={onViewPost}
-          onEdit={onEditPost}
-          onDelete={onDeletePost}
-          onArchive={onArchivePost}
-          onUnarchive={onUnarchivePost}
-          showActions={showActions}
-          compact={compact}
-          currentUserId={currentUserId}
+    <div className="post-list-container">
+      <div className="post-list">
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            onView={onViewPost}
+            onEdit={onEditPost}
+            onDelete={onDeletePost}
+            onArchive={onArchivePost}
+            onUnarchive={onUnarchivePost}
+            showActions={showActions}
+            compact={compact}
+            currentUserId={currentUserId}
+          />
+        ))}
+      </div>
+      
+      {showPagination && onPageChange && totalItems && (
+        <Pagination
+          currentPage={currentPage}
+          totalItems={totalItems}
+          itemsPerPage={PAGINATION.POSTS_PER_PAGE}
+          onPageChange={onPageChange}
         />
-      ))}
+      )}
     </div>
   );
 };

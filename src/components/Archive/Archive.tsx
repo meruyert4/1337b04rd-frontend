@@ -4,27 +4,40 @@ import PostList from '../PostList/PostList';
 import { Post } from '../../api/types';
 import { api } from '../../api';
 import { useSession } from '../../hooks/useSession';
+import { PAGINATION, getOffsetFromPage } from '../../constants/pagination';
 
 const Archive: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'view'>('list');
   const { userId } = useSession();
 
   useEffect(() => {
-    fetchArchivedPosts();
-  }, []);
+    fetchArchivedPosts(currentPage);
+  }, [currentPage]);
 
-  const fetchArchivedPosts = async () => {
+  const fetchArchivedPosts = async (page: number = 1) => {
     try {
       setLoading(true);
-      const allPosts = await api.getPosts(100, 0, true); // include_archived = true
+      const allPosts = await api.getPosts(PAGINATION.TOTAL_POSTS_LIMIT, 0, true); // include_archived = true
       // Filter only archived posts
       const archivedPosts = allPosts.filter(post => post.is_archive);
-      setPosts(archivedPosts);
+      const totalCount = archivedPosts.length;
+      setTotalPosts(totalCount);
+      
+      // Apply pagination to the filtered archived posts
+      const offset = getOffsetFromPage(page, PAGINATION.POSTS_PER_PAGE);
+      const paginatedPosts = archivedPosts.slice(offset, offset + PAGINATION.POSTS_PER_PAGE);
+      setPosts(paginatedPosts);
+      
+      console.log(`Loaded ${totalCount} archived posts, showing page ${page} with ${paginatedPosts.length} posts`);
     } catch (error) {
       console.error('Failed to fetch archived posts:', error);
+      setPosts([]);
+      setTotalPosts(0);
     } finally {
       setLoading(false);
     }
@@ -51,6 +64,10 @@ const Archive: React.FC = () => {
         console.error('Failed to unarchive post:', error);
       }
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const renderContent = () => {
@@ -90,6 +107,11 @@ const Archive: React.FC = () => {
               compact={true}
               currentUserId={userId}
               emptyMessage="No archived posts found. The multiverse is clean!"
+              // Pagination props
+              currentPage={currentPage}
+              totalItems={totalPosts}
+              onPageChange={handlePageChange}
+              showPagination={true}
             />
           </div>
         );

@@ -5,35 +5,47 @@ import PostForm, { PostFormData } from '../PostForm/PostForm';
 import { Post, CreatePostRequest, UpdatePostRequest } from '../../api/types';
 import { api } from '../../api';
 import { useSession } from '../../hooks/useSession';
+import { PAGINATION, getOffsetFromPage } from '../../constants/pagination';
 
 
 const MyPosts: React.FC = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [viewMode, setViewMode] = useState<'list' | 'create' | 'view'>('list');
   const { userId, userName, session } = useSession();
 
-  const loadMyPosts = React.useCallback(async () => {
+  const loadMyPosts = React.useCallback(async (page: number = 1) => {
     if (!userId) return;
     
     setLoading(true);
     try {
-      const fetchedPosts = await api.getPostsByAuthor(userId);
-      setPosts(fetchedPosts || []);
+      // For now, let's get all posts and handle pagination client-side
+      // This ensures we have the total count and can show pagination
+      const allPosts = await api.getPostsByAuthor(userId, PAGINATION.TOTAL_POSTS_LIMIT, 0);
+      const totalCount = allPosts?.length || 0;
+      setTotalPosts(totalCount);
+      
+      // Apply pagination to the fetched posts
+      const offset = getOffsetFromPage(page, PAGINATION.POSTS_PER_PAGE);
+      const paginatedPosts = allPosts?.slice(offset, offset + PAGINATION.POSTS_PER_PAGE) || [];
+      setPosts(paginatedPosts);
     } catch (error) {
       console.error('Failed to load my posts:', error);
       setPosts([]);
+      setTotalPosts(0);
     }
     setLoading(false);
   }, [userId]);
 
   useEffect(() => {
     if (userId) {
-      loadMyPosts();
+      loadMyPosts(currentPage);
     }
-  }, [userId, loadMyPosts]);
+  }, [userId, currentPage, loadMyPosts]);
 
   const handleCreatePost = async (data: PostFormData) => {
     try {
@@ -111,6 +123,10 @@ const MyPosts: React.FC = () => {
         alert('Failed to archive post. Please try again.');
       }
     }
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   const handleUpdatePost = async (data: PostFormData) => {
@@ -210,6 +226,11 @@ const MyPosts: React.FC = () => {
                 showActions={true}
                 compact={true}
                 currentUserId={userId}
+                // Pagination props
+                currentPage={currentPage}
+                totalItems={totalPosts}
+                onPageChange={handlePageChange}
+                showPagination={true}
               />
             )}
           </div>

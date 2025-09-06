@@ -330,6 +330,7 @@ input:focus, textarea:focus, select:focus {
   box-shadow: var(--shadow-sm);
   transition: all var(--transition-fast);
   position: relative;
+  min-height: 300px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -431,6 +432,8 @@ input:focus, textarea:focus, select:focus {
   margin-top: auto;
   padding-top: var(--spacing-md);
   border-top: 1px solid var(--color-border-light);
+  min-height: 60px; /* Ensure consistent height for actions area */
+  align-items: center;
 }
 
 .post-footer {
@@ -707,6 +710,9 @@ input:focus, textarea:focus, select:focus {
   transition: all var(--transition-fast);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  height: 32px; /* Fixed height for consistency */
+  justify-content: center;
+  margin-bottom: var(--spacing-sm);
 }
 
 .attachment-indicator:hover {
@@ -764,10 +770,10 @@ input:focus, textarea:focus, select:focus {
 /* Post list styles */
 .post-list {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   grid-auto-rows: 1fr;
   gap: var(--spacing-lg);
-  max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   align-items: stretch;
 }
@@ -820,6 +826,7 @@ input:focus, textarea:focus, select:focus {
   
   .post-card {
     padding: var(--spacing-lg);
+    min-height: 250px; /* Slightly smaller min-height for mobile */
   }
 
   /* Responsive image sizes for mobile */
@@ -1676,5 +1683,110 @@ input:focus, textarea:focus, select:focus {
   
   .random-character-btn {
     width: 100%;
+  }
+}
+
+/* Pagination Styles */
+.pagination {
+  margin-top: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.pagination-info {
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  border-color: var(--color-primary);
+  transform: translateY(-1px);
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-btn.active {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 10px var(--color-shadow);
+}
+
+.pagination-pages {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: center;
+}
+
+.pagination-ellipsis {
+  color: var(--color-text-muted);
+  padding: 0 var(--spacing-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+.page-btn {
+  min-width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Post List Container */
+.post-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* Responsive Pagination */
+@media (max-width: 768px) {
+  .pagination-controls {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+  
+  .pagination-pages {
+    order: -1;
+  }
+  
+  .pagination-btn {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .post-list-container .post-list {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
+    padding: 0 var(--spacing-sm);
   }
 }
