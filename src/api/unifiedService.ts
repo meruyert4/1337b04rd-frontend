@@ -5,6 +5,7 @@ import {
   CreatePostRequest, 
   UpdatePostRequest, 
   CreateCommentRequest, 
+  UpdateCommentRequest,
   Session,
   Character
 } from './types';
@@ -26,9 +27,9 @@ export interface ApiService {
   getPostsByAuthor(authorId: string, limit?: number, offset?: number): Promise<Post[]>;
   
   // Comment methods
-  getComments(postId: number): Promise<Comment[]>;
+  getCommentsByPost(postId: number): Promise<Comment[]>;
   createComment(request: CreateCommentRequest): Promise<Comment>;
-  updateComment(id: number, request: CreateCommentRequest): Promise<Comment>;
+  updateComment(request: UpdateCommentRequest): Promise<Comment>;
   deleteComment(id: number): Promise<void>;
   
   // Session methods
@@ -88,13 +89,28 @@ class UnifiedApiService {
 
   // Comments API
   async getCommentsByPost(postId: number): Promise<ApiComment[]> {
-    const comments = await realApiService.getCommentsByPost(postId);
-    return comments as unknown as ApiComment[];
+    try {
+      const comments = await realApiService.getCommentsByPost(postId);
+      // Ensure we always return an array, even if the API returns null/undefined
+      return Array.isArray(comments) ? comments as unknown as ApiComment[] : [];
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      return [];
+    }
   }
 
   async createComment(request: CreateCommentRequest): Promise<ApiComment> {
     const comment = await realApiService.createComment(request);
     return comment as unknown as ApiComment;
+  }
+
+  async updateComment(request: UpdateCommentRequest): Promise<ApiComment> {
+    const comment = await realApiService.updateComment(request);
+    return comment as unknown as ApiComment;
+  }
+
+  async deleteComment(id: number): Promise<void> {
+    await realApiService.deleteComment(id);
   }
 
   // Sessions API

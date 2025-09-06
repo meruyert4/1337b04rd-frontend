@@ -91,7 +91,14 @@ const PostCard: React.FC<PostCardProps> = ({
               <span className="post-author">{post.author_name}</span>
             </div>
           )}
-          <span className="post-date">{formatDate(post.created_at)}</span>
+          <div className="post-meta-right">
+            <span className="post-date">{formatDate(post.created_at)}</span>
+            {post.comments && post.comments.length > 0 && (
+              <span className="post-comment-count">
+                💬 {post.comments.length}
+              </span>
+            )}
+          </div>
         </div>
       </div>
 

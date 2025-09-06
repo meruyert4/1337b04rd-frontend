@@ -7,6 +7,7 @@ export { default as Archive } from './Archive/Archive';
 export { default as CharacterCard } from './Character/CharacterCard';
 export { default as CharacterList } from './Character/CharacterList';
 export { default as Pagination } from './Pagination';
+export { CommentCard, CommentList, CommentForm } from './Comment';
 
 // Export types
 export type { PostFormData } from './PostForm/PostForm';

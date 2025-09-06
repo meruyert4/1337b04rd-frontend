@@ -7,7 +7,8 @@ import {
   PostList, 
   Archive, 
   CharacterCard, 
-  CharacterList 
+  CharacterList,
+  CommentList
 } from './components';
 import { PostFormData } from './components';
 import MyPosts from './components/MyPosts/MyPosts';
@@ -212,6 +213,18 @@ const PostsCatalog: React.FC = () => {
               onDelete={handleDeletePost}
               onArchive={handleArchivePost}
             />
+            <CommentList
+              postId={selectedPost.id}
+              currentUserId={userId}
+              onCommentUpdate={() => {
+                // Optionally refresh the post to update comment count
+                console.log('Comment updated');
+              }}
+            />
+            {/* Debug info */}
+            <div style={{ marginTop: '10px', padding: '10px', background: '#333', color: '#fff', fontSize: '12px' }}>
+              Debug: userId = {userId || 'undefined'}, postId = {selectedPost.id}
+            </div>
           </div>
         ) : null;
 

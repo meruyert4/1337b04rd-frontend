@@ -12,7 +12,10 @@ import {
   DeletePostResponse, 
   CreateCommentRequest, 
   CreateCommentResponse, 
-  GetCommentsResponse 
+  UpdateCommentRequest,
+  UpdateCommentResponse,
+  GetCommentsResponse,
+  DeleteCommentResponse
 } from './types';
 
 export class RealApiService {
@@ -67,9 +70,7 @@ export class RealApiService {
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
     
-    console.log('makeFormRequest - URL:', url);
-    console.log('makeFormRequest - credentials: include');
-    console.log('makeFormRequest - method:', method);
+    
     
     try {
       const response = await fetch(url, {
@@ -78,14 +79,16 @@ export class RealApiService {
         body: formData,
       });
       
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Response error text:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
       
-      return await response.json();
+      const result = await response.json();
+      console.log('Response data:', result);
+      return result;
     } catch (error) {
       console.error('API request failed:', error);
       throw error;
@@ -130,11 +133,6 @@ export class RealApiService {
       formData.append('author_name', postData.author_name);
     }
 
-    // Debug: Log FormData contents
-    console.log('FormData contents:');
-    formData.forEach((value, key) => {
-      console.log(`${key}: ${value}`);
-    });
 
     console.log('Sending request to:', `/api/posts`);
     console.log('With credentials:', 'include');
@@ -224,7 +222,14 @@ export class RealApiService {
       post_id: postId.toString(),
     });
     
-    return this.makeRequest<Comment[]>(`/api/comments/post?${params}`);
+    try {
+      const comments = await this.makeRequest<Comment[]>(`/api/comments/post?${params}`);
+      // Ensure we always return an array, even if the API returns null/undefined
+      return Array.isArray(comments) ? comments : [];
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      return [];
+    }
   }
 
   async createComment(request: CreateCommentRequest): Promise<Comment> {
@@ -248,15 +253,16 @@ export class RealApiService {
     return this.makeRequest<Comment>(`/api/comments/${id}`);
   }
 
-  async updateComment(id: number, request: Partial<CreateCommentRequest>): Promise<Comment> {
+  async updateComment(request: UpdateCommentRequest): Promise<Comment> {
     const formData = new FormData();
-    formData.append('id', id.toString());
+    formData.append('title', request.title);
+    formData.append('content', request.content);
     
-    if (request.title) formData.append('title', request.title);
-    if (request.content) formData.append('content', request.content);
-    if (request.image) formData.append('image', request.image);
+    if (request.image) {
+      formData.append('image', request.image);
+    }
     
-    return this.makeFormRequest<Comment>(`/api/comments/${id}`, formData, 'PUT');
+    return this.makeFormRequest<Comment>(`/api/comments/${request.id}`, formData, 'PUT');
   }
 
   async deleteComment(id: number): Promise<void> {

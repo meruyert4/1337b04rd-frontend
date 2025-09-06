@@ -19,9 +19,11 @@ export interface Comment {
   content: string;
   author_id: string;
   author_name: string;
+  author_image?: string;
   image_url?: string;
   reply_to_comment_id?: number;
   created_at: string;
+  replies?: Comment[];
 }
 
 export interface Session {
@@ -116,9 +118,27 @@ export interface CreateCommentResponse {
   error?: string;
 }
 
+export interface UpdateCommentRequest {
+  id: number;
+  title: string;
+  content: string;
+  image?: File;
+}
+
+export interface UpdateCommentResponse {
+  success: boolean;
+  comment?: Comment;
+  error?: string;
+}
+
 export interface GetCommentsResponse {
   success: boolean;
   comments?: Comment[];
+  error?: string;
+}
+
+export interface DeleteCommentResponse {
+  success: boolean;
   error?: string;
 }
 
