@@ -210,7 +210,7 @@ const CommentCard: React.FC<CommentCardProps> = ({
           <CommentForm
             postId={postId}
             replyToCommentId={comment.id}
-            onCommentCreated={() => {
+            onCommentCreated={(comment) => {
               if (onCommentCreated) {
                 onCommentCreated();
               }

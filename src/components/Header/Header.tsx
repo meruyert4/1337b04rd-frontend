@@ -17,19 +17,19 @@ const Header: React.FC = () => {
   const currentPage = getCurrentPage();
 
   return (
-    <header className="transparent-header">
-      <div className="logo">
-        <Link to="/">1337b04rd</Link>
+    <header className="transparent-header" data-testid="header">
+      <div className="logo" data-testid="logo">
+        <Link to="/" data-testid="logo-link">1337b04rd</Link>
       </div>
       
-      <nav>
-        <Link to="/" className={currentPage === 'home' ? 'active' : ''}>Home</Link>
-        <Link to="/posts" className={currentPage === 'posts' ? 'active' : ''}>Catalog</Link>
-        <Link to="/my-posts" className={currentPage === 'my-posts' ? 'active' : ''}>My Posts</Link>
-        <Link to="/archive" className={currentPage === 'archive' ? 'active' : ''}>Archive</Link>
+      <nav data-testid="main-navigation">
+        <Link to="/" className={currentPage === 'home' ? 'active' : ''} data-testid="nav-home">Home</Link>
+        <Link to="/posts" className={currentPage === 'posts' ? 'active' : ''} data-testid="nav-catalog">Catalog</Link>
+        <Link to="/my-posts" className={currentPage === 'my-posts' ? 'active' : ''} data-testid="nav-my-posts">My Posts</Link>
+        <Link to="/archive" className={currentPage === 'archive' ? 'active' : ''} data-testid="nav-archive">Archive</Link>
       </nav>
 
-      <div className="header-actions">
+      <div className="header-actions" data-testid="header-actions">
         <Profile />
       </div>
     </header>

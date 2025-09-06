@@ -39,12 +39,12 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="profile-section">
+    <div className="profile-section" data-testid="profile-section">
       {userName && (
         <>
           {/* Compact header profile */}
-          <div className="profile-compact" onClick={toggleProfile}>
-            <div className="avatar-small" onClick={handleImageClick} title="Click to change profile image">
+          <div className="profile-compact" onClick={toggleProfile} data-testid="profile-compact">
+            <div className="avatar-small" onClick={handleImageClick} title="Click to change profile image" data-testid="avatar-small">
               {session?.image ? (
                 <img src={session.image} alt={userName} />
               ) : (
@@ -53,8 +53,8 @@ const Profile: React.FC = () => {
                 </div>
               )}
             </div>
-            <span className="username-compact">{userName}</span>
-            <div className="profile-arrow">
+            <span className="username-compact" data-testid="username-compact">{userName}</span>
+            <div className="profile-arrow" data-testid="profile-arrow">
               {isExpanded ? '▼' : '▶'}
             </div>
           </div>
@@ -64,15 +64,16 @@ const Profile: React.FC = () => {
             className="dice-button-header"
             onClick={handleNewSession}
             title="Get new random character"
+            data-testid="dice-button"
           >
             🎲
           </button>
 
           {/* Expanded profile dropdown */}
           {isExpanded && (
-            <div className="profile-dropdown">
-              <div className="profile-info">
-                <div className="avatar" onClick={handleImageClick} title="Click to change profile image">
+            <div className="profile-dropdown" data-testid="profile-dropdown">
+              <div className="profile-info" data-testid="profile-info">
+                <div className="avatar" onClick={handleImageClick} title="Click to change profile image" data-testid="avatar-large">
                   {session?.image ? (
                     <img src={session.image} alt={userName} />
                   ) : (
@@ -90,12 +91,13 @@ const Profile: React.FC = () => {
                   accept="image/*"
                   onChange={handleImageUpload}
                   style={{ display: 'none' }}
+                  data-testid="avatar-upload-input"
                 />
-                <div className="user-details">
-                  <span className="username">{userName}</span>
+                <div className="user-details" data-testid="user-details">
+                  <span className="username" data-testid="username">{userName}</span>
                   <span className="character-status">Character</span>
-                  {session?.gender && <span className="gender">Gender: {session.gender}</span>}
-                  {session?.age && <span className="age">Age: {session.age}</span>}
+                  {session?.gender && <span className="gender" data-testid="gender">Gender: {session.gender}</span>}
+                  {session?.age && <span className="age" data-testid="age">Age: {session.age}</span>}
                 </div>
               </div>
             </div>

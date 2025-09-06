@@ -20,6 +20,7 @@ const CommentList: React.FC<CommentListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [editingComment, setEditingComment] = useState<Comment | null>(null);
+  const [showCommentForm, setShowCommentForm] = useState(false);
 
   useEffect(() => {
     fetchComments();
@@ -80,9 +81,10 @@ const CommentList: React.FC<CommentListProps> = ({
     return rootComments;
   };
 
-  const handleCommentCreated = () => {
+  const handleCommentCreated = (comment?: Comment) => {
     fetchComments();
     setReplyingTo(null);
+    setShowCommentForm(false);
     if (onCommentUpdate) {
       onCommentUpdate();
     }
@@ -153,15 +155,24 @@ const CommentList: React.FC<CommentListProps> = ({
 
   return (
     <div className="comment-list">
-      <div className="comment-list-header">
-        <h3>Comments ({comments.length})</h3>
-      </div>
+      <h3>Comments ({comments.length})</h3>
 
-      {/* Comment Form for new comments - only show if user is logged in */}
-      {!replyingTo && !editingComment && currentUserId && (
+      {/* Show Add Comment button when no comments and user is logged in */}
+      {!replyingTo && !editingComment && currentUserId && comments.length === 0 && !showCommentForm && (
+        <button 
+          className="add-comment-btn"
+          onClick={() => setShowCommentForm(true)}
+        >
+          💬 Add Comment
+        </button>
+      )}
+
+      {/* Comment Form for new comments - only show if user is logged in and form is visible */}
+      {!replyingTo && !editingComment && currentUserId && (comments.length > 0 || showCommentForm) && (
         <CommentForm
           postId={postId}
           onCommentCreated={handleCommentCreated}
+          onCancel={() => setShowCommentForm(false)}
           currentUserId={currentUserId}
         />
       )}
@@ -173,45 +184,47 @@ const CommentList: React.FC<CommentListProps> = ({
         </div>
       )}
 
-
       {/* Comment Form for editing */}
       {editingComment && (
-        <div className="comment-edit-form-container">
-          <CommentForm
-            postId={postId}
-            editingComment={editingComment}
-            onCommentCreated={() => {
-              handleCommentUpdated(editingComment);
-            }}
-            onCancel={() => setEditingComment(null)}
-            currentUserId={currentUserId}
-          />
-        </div>
+        <CommentForm
+          postId={postId}
+          editingComment={editingComment}
+          onCommentCreated={(updatedComment) => {
+            if (editingComment && updatedComment) {
+              const updatedCommentData = {
+                ...editingComment,
+                title: updatedComment.title,
+                content: updatedComment.content
+              };
+              handleCommentUpdated(updatedCommentData);
+            }
+          }}
+          onCancel={() => setEditingComment(null)}
+          currentUserId={currentUserId}
+        />
       )}
 
       {/* Comments List */}
-      <div className="comments-container">
-        {comments.length === 0 ? (
-          <div className="comment-list-empty">
-            <p>No comments yet. Be the first to comment!</p>
-          </div>
-        ) : (
-          comments.map((comment) => (
-            <CommentCard
-              key={comment.id}
-              comment={comment}
-              onReply={handleReply}
-              onEdit={handleEdit}
-              onDelete={handleCommentDeleted}
-              onCommentCreated={handleCommentCreated}
-              currentUserId={currentUserId}
-              postId={postId}
-              replyingTo={replyingTo}
-              onCancelReply={() => setReplyingTo(null)}
-            />
-          ))
-        )}
-      </div>
+      {comments.length === 0 ? (
+        <div className="comment-list-empty">
+          <p>No comments yet. Be the first to comment!</p>
+        </div>
+      ) : (
+        comments.map((comment) => (
+          <CommentCard
+            key={comment.id}
+            comment={comment}
+            onReply={handleReply}
+            onEdit={handleEdit}
+            onDelete={handleCommentDeleted}
+            onCommentCreated={handleCommentCreated}
+            currentUserId={currentUserId}
+            postId={postId}
+            replyingTo={replyingTo}
+            onCancelReply={() => setReplyingTo(null)}
+          />
+        ))
+      )}
     </div>
   );
 };

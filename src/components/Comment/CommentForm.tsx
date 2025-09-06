@@ -6,7 +6,7 @@ interface CommentFormProps {
   postId: number;
   replyToCommentId?: number;
   editingComment?: Comment;
-  onCommentCreated: () => void;
+  onCommentCreated: (comment?: Comment) => void;
   onCancel?: () => void;
   currentUserId?: string;
 }
@@ -64,6 +64,15 @@ const CommentForm: React.FC<CommentFormProps> = ({
           image: image || undefined
         };
         await api.updateComment(updateRequest);
+        
+        // Pass updated comment data
+        const updatedComment: Comment = {
+          ...editingComment,
+          title: title.trim(),
+          content: content.trim(),
+          image_url: imagePreview || editingComment.image_url
+        };
+        onCommentCreated(updatedComment);
       } else {
         // Create new comment
         const createRequest: CreateCommentRequest = {
@@ -74,6 +83,7 @@ const CommentForm: React.FC<CommentFormProps> = ({
           reply_to_comment_id: replyToCommentId
         };
         const createdComment = await api.createComment(createRequest);
+        onCommentCreated(createdComment);
       }
 
       // Reset form
@@ -81,8 +91,6 @@ const CommentForm: React.FC<CommentFormProps> = ({
       setContent('');
       setImage(null);
       setImagePreview(null);
-      
-      onCommentCreated();
     } catch (err) {
       console.error('Failed to save comment:', err);
       console.error('Error details:', err);

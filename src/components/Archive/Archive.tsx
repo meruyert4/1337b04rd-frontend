@@ -23,6 +23,15 @@ const Archive: React.FC = () => {
     try {
       setLoading(true);
       const allPosts = await api.getPosts(PAGINATION.TOTAL_POSTS_LIMIT, 0, true); // include_archived = true
+      
+      // Handle null or undefined response
+      if (!allPosts) {
+        setPosts([]);
+        setTotalPosts(0);
+        console.log('No posts received from API');
+        return;
+      }
+      
       // Filter only archived posts
       const archivedPosts = allPosts.filter(post => post.is_archive);
       const totalCount = archivedPosts.length;
